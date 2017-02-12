@@ -1,0 +1,24 @@
+{
+  "name": "homebridge-camera-sensr",
+  "version": "0.0.1",
+  "description": "A homebridge plugin to access your IP cameras available in your Sensr.net account.: https://github.com/nfarina/homebridge",
+  "license": "Apache",
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/brandonmartinez/homebridge-camera-sensr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/brandonmartinez/homebridge-camera-sensr/issues"
+  },
+  "engines": {
+    "node": ">=5.0.0",
+    "homebridge": ">=0.4.5"
+  },
+  "dependencies": {
+    "node-rest-client": "^2.5.0",
+    "request": "^2.79.0"
+  }
+}
