@@ -18,7 +18,6 @@
     "homebridge": ">=0.4.5"
   },
   "dependencies": {
-    "node-rest-client": "^2.5.0",
     "request": "^2.79.0"
   }
 }
