@@ -41,7 +41,7 @@ SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     let resolution = req.width + 'x' + req.height;
     this.log('Request made for handleSnapshotRequest.', this.options.live);
 
-    request({ url: this.options.live }, function (err, response, buffer) {
+    request({ url: this.options.still }, function (err, response, buffer) {
         this.log(err, response);
         callback(err, buffer);
     });
