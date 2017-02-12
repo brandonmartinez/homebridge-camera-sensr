@@ -54,6 +54,8 @@ sensrPlatform.prototype.didFinishLaunching = function () {
             client.get(SENSR_API_CAMERAS_OWNED,
                 { "Authorization": "OAUTH " + token },
                 function (data, response) {
+                    self.log(data);
+                    self.log(response);
                     if (data && data.cameras) {
                         var configuredAccessories = [];
 
