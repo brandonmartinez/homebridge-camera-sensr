@@ -1,5 +1,5 @@
 var Accessory, hap, UUIDGen,
-    //    SensrCamera = require('./SensrCamera').SensrCamera,
+    SensrCamera = require('./SensrCamera'),
     Client = require('node-rest-client').Client,
     client = new Client(),
     SENSR_API_URL = 'https://api.sensr.net/u/v3/',
@@ -69,10 +69,12 @@ sensrPlatform.prototype.didFinishLaunching = function () {
 
                                 uuid = UUIDGen.generate(sensrCameraConfig.id),
                                 cameraAccessory = new Accessory(name, uuid, hap.Accessory.Categories.CAMERA),
-                                //cameraSource = new SensrCamera(hap, sensrCameraConfig);
-                                cameraSource = {};
+                                cameraSource = new SensrCamera(hap, sensrCameraConfig);
 
                             cameraAccessory.configureCameraSource(cameraSource);
+                            self.log(sensrCameraConfig);
+                            self.log(cameraAccessory);
+                            self.log(cameraSource);
                             configuredAccessories.push(cameraAccessory);
                         });
 
