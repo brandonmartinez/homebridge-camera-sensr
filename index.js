@@ -25,7 +25,7 @@ function sensrPlatform(log, config, api) {
         if (api.version < 2.1) {
             throw new Error("Unexpected API version.");
         }
-
+        self.log('Api ready to go!');
         self.api.on('didFinishLaunching', self.didFinishLaunching.bind(this));
     }
 }
@@ -36,6 +36,8 @@ sensrPlatform.prototype.configureAccessory = function (accessory) {
 
 sensrPlatform.prototype.didFinishLaunching = function () {
     var self = this;
+    self.log('didFinishLaunching');
+    self.log(self.config);
 
     if (self.config.accounts) {
         // Checking for any available Sensr accounts
