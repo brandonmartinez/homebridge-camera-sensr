@@ -57,7 +57,7 @@ sensrPlatform.prototype.didFinishLaunching = function () {
 
                     var uuid = UUIDGen.generate(sensrCameraConfig.id.toString()),
                         cameraAccessory = new Accessory(sensrCameraConfig.name, uuid, hap.Accessory.Categories.CAMERA),
-                        cameraSource = new SensrCamera(hap, sensrCameraConfig);
+                        cameraSource = new SensrCamera(hap, sensrCameraConfig, self.log);
 
                     sensrCameraConfig.uuid = uuid;
                     self.log(sensrCameraConfig);
