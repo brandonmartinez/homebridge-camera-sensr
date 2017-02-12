@@ -23,7 +23,7 @@ function SensrCamera(hap, sensrCameraOptions) {
     var numberOfStreams = 1;
     var maxWidth = 640;
     var maxHeight = 480;
-    var maxFPS = 30;
+    var maxFPS = 15;
 
     this.createCameraControlService();
     this._createStreamControllers(numberOfStreams);
@@ -44,7 +44,14 @@ SensrCamera.prototype.createCameraControlService = function () {
 
 SensrCamera.prototype._createStreamControllers = function (maxStreams, options) {
     let self = this;
-    options = options || {};
+    options = options || {
+        video: {
+            codec: 'MJPEG',
+            resolutions: [
+                [640, 480, 15]
+            ]
+        }
+    };
 
     for (var i = 0; i < maxStreams; i++) {
         var streamController = new StreamController(i, options, self);
