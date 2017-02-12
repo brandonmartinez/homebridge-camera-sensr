@@ -46,7 +46,10 @@ SensrCamera.prototype._createStreamControllers = function (maxStreams, options) 
     let self = this;
     options = options || {
         video: {
-            codec: 'MJPEG',
+            codec: {
+                profiles: [0, 1, 2], // Enum, please refer StreamController.VideoCodecParamProfileIDTypes
+                levels: [0, 1, 2] // Enum, please refer StreamController.VideoCodecParamLevelTypes
+            },
             resolutions: [
                 [640, 480, 15]
             ]
