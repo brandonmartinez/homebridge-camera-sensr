@@ -2,7 +2,7 @@
 var uuid, Service, Characteristic, StreamController;
 
 var fs = require('fs');
-var request = require('request');
+var request = require('request').defaults({ encoding: null });
 var spawn = require('child_process').spawn;
 
 function SensrCamera(hap, sensrCameraOptions, log) {
@@ -42,6 +42,7 @@ SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     this.log('Request made for handleSnapshotRequest.', this.options.live);
 
     request(this.options.live, function (err, response, buffer) {
+        this.log(err, response);
         callback(undefined, buffer);
     });
 }
