@@ -39,10 +39,9 @@ SensrCamera.prototype.handleCloseConnection = function (connectionID) {
 
 SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     let resolution = req.width + 'x' + req.height;
-    this.log('Request made for handleSnapshotRequest.', this.options.live);
+    this.log('Request made for handleSnapshotRequest.', this.options.still);
 
     request({ url: this.options.still }, function (err, response, buffer) {
-        this.log(err, response);
         callback(err, buffer);
     });
 }
