@@ -2,7 +2,7 @@
 var uuid, Service, Characteristic, StreamController;
 
 var fs = require('fs');
-var request = require('request').defaults({ encoding: null });
+var request = require('request');
 var spawn = require('child_process').spawn;
 
 function SensrCamera(hap, sensrCameraOptions) {
@@ -36,8 +36,8 @@ SensrCamera.prototype.handleCloseConnection = function (connectionID) {
 }
 
 
-SensrCamera.prototype.handleSnapshotRequest = function (request, callback) {
-    let resolution = request.width + 'x' + request.height;
+SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
+    let resolution = req.width + 'x' + req.height;
 
     request(this.options.live, function (err, response, buffer) {
         callback(undefined, buffer);
