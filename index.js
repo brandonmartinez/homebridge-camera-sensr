@@ -1,5 +1,5 @@
 var Accessory, hap, UUIDGen,
-//    SensrCamera = require('./SensrCamera').SensrCamera,
+    //    SensrCamera = require('./SensrCamera').SensrCamera,
     Client = require('node-rest-client').Client,
     client = new Client(),
     SENSR_API_URL = 'https://api.sensr.net/u/v3/',
@@ -49,18 +49,13 @@ sensrPlatform.prototype.didFinishLaunching = function () {
                 return;
             }
 
-            // getting a list of available cameras to register
-            var args = {
-                headers: { "Authorization": "OAUTH " + token } // request headers
-            };
-
-
-            client.get(SENSR_API_CAMERAS_OWNED, args,
+            client.get(SENSR_API_CAMERAS_OWNED,
+                { "Authorization": "OAUTH " + token },
                 function (data, response) {
                     if (data && data.cameras) {
                         var configuredAccessories = [];
 
-                        cameras.forEach(function (cameraConfig) {
+                        data.cameras.forEach(function (cameraConfig) {
                             var camera = cameraConfig.camera,
 
                                 urls = cameraConfig.urls,
