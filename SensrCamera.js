@@ -53,6 +53,18 @@ SensrCamera.prototype._createStreamControllers = function (maxStreams, options) 
             resolutions: [
                 [640, 480, 15]
             ]
+        },
+        audio: {
+            codecs: [
+                {
+                    type: "OPUS", // Audio Codec
+                    samplerate: 24 // 8, 16, 24 KHz
+                },
+                {
+                    type: "AAC-eld",
+                    samplerate: 16
+                }
+            ]
         }
     };
 
