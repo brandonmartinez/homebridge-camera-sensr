@@ -35,61 +35,61 @@ sensrPlatform.prototype.configureAccessory = function (accessory) {
 
 sensrPlatform.prototype.didFinishLaunching = function () {
     var self = this;
-    self.log('didFinishLaunching');
-    self.log(self.config);
+
+    function processSensrResponse(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            var data = JSON.parse(body);
+
+            if (data && data.cameras) {
+                var configuredAccessories = [];
+
+                data.cameras.forEach(function (cameraConfig) {
+                    var camera = cameraConfig.camera,
+
+                        urls = cameraConfig.urls,
+                        sensrCameraConfig = {
+                            name: camera.name,
+                            id: camera.id,
+                            state: camera.state,
+                            still: urls.latestimage,
+                            live: urls.livestream,
+                        };
+
+                    self.log(sensrCameraConfig);
+                    
+                    var uuid = UUIDGen.generate(sensrCameraConfig.id),
+                        cameraAccessory = new Accessory(name, uuid, hap.Accessory.Categories.CAMERA),
+                        cameraSource = new SensrCamera(hap, sensrCameraConfig);
+
+                    cameraAccessory.configureCameraSource(cameraSource);
+                    configuredAccessories.push(cameraAccessory);
+                });
+
+                self.api.publishCameraAccessories("Camera-Sensr", configuredAccessories);
+            } else {
+                self.log('No data was found for account.');
+            }
+        }
+    }
+
+    function processSensrAccounts(account) {
+        var accountDescription = account.description,
+            token = account.token;
+
+        if (!token) {
+            self.log("Missing parameters.");
+            return;
+        }
+
+        request({
+            url: SENSR_API_CAMERAS_OWNED,
+            headers: {
+                "Authorization": "OAUTH " + token
+            }
+        }, processSensrResponse);
+    }
 
     if (self.config.accounts) {
-        // Checking for any available Sensr accounts
-        var accounts = self.config.accounts;
-        accounts.forEach(function (account) {
-            var accountDescription = account.description,
-                token = account.token;
-
-            if (!token) {
-                self.log("Missing parameters.");
-                return;
-            }
-
-            request({
-                url: SENSR_API_CAMERAS_OWNED,
-                headers: {
-                    "Authorization": "OAUTH " + token
-                }
-            }, function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    var data = JSON.parse(body);
-                    self.log(data);
-
-                    if (data && data.cameras) {
-                        var configuredAccessories = [];
-
-                        data.cameras.forEach(function (cameraConfig) {
-                            var camera = cameraConfig.camera,
-
-                                urls = cameraConfig.urls,
-                                sensrCameraConfig = {
-                                    name: camera.name,
-                                    id: camera.id,
-                                    state: camera.state,
-                                    still: urls.latestimage,
-                                    live: urls.livestream,
-                                },
-
-                                uuid = UUIDGen.generate(sensrCameraConfig.id),
-                                cameraAccessory = new Accessory(name, uuid, hap.Accessory.Categories.CAMERA),
-                                cameraSource = new SensrCamera(hap, sensrCameraConfig);
-
-                            cameraAccessory.configureCameraSource(cameraSource);
-                            self.log(sensrCameraConfig);
-                            self.log(cameraAccessory);
-                            self.log(cameraSource);
-                            configuredAccessories.push(cameraAccessory);
-                        });
-
-                        self.api.publishCameraAccessories("Camera-Sensr", configuredAccessories);
-                    }
-                }
-            });
-        });
+        self.config.accounts.forEach(processSensrAccounts);
     }
 }
