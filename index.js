@@ -58,6 +58,7 @@ sensrPlatform.prototype.didFinishLaunching = function () {
             }, function (error, response, body) {
                 if (!error && response.statusCode == 200) {
                     var data = JSON.parse(body);
+                    self.log(data);
 
                     if (data && data.cameras) {
                         var configuredAccessories = [];
