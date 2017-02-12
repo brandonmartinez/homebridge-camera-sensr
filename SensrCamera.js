@@ -36,6 +36,14 @@ SensrCamera.prototype.handleCloseConnection = function (connectionID) {
 }
 
 
+SensrCamera.prototype.handleSnapshotRequest = function (request, callback) {
+    let resolution = request.width + 'x' + request.height;
+
+    request(this.options.live, function (err, response, buffer) {
+        callback(undefined, buffer);
+    });
+}
+
 SensrCamera.prototype.createCameraControlService = function () {
     var controlService = new Service.CameraControl();
 
