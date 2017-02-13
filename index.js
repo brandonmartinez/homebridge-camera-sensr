@@ -13,7 +13,7 @@ function SensrPlatform(log, config, api) {
 
     // Light validation of API
     if (!api || api.version < 2.1) {
-        throw new Error("Homebridge API v2.1 or higher required.");
+        throw new Error('Homebridge API v2.1 or higher required.');
     }
 
     // Cleaning up Sensr API config
@@ -61,6 +61,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
                     live: urls.livestream,
                 };
 
+            self.log('Adding new Sensr Camera source.', sensrCameraConfig);
             var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
                 cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
                 cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);
@@ -79,29 +80,37 @@ SensrPlatform.prototype.didFinishLaunching = function () {
             } else {
                 self.log('No data was found for account.');
             }
+        } else {
+            self.log('There was an error retrieving data from the Sensr.net account.');
         }
 
-        self.api.publishCameraAccessories("Camera-Sensr", configuredAccessories);
+        self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
     }
 
     function processSensrAccounts(account) {
         var token = account.token;
 
+        self.log('Attempting to connect to Sensr.net account.', account);
+
         if (!token) {
-            self.log("Missing parameters.");
+            self.log('Missing parameters.');
             return;
         }
 
         request({
             url: self.config.sensrApi.camerasOwnedUrl,
             headers: {
-                "Authorization": "OAUTH " + token
+                'Authorization': 'OAUTH ' + token
             }
         }, processSensrResponse);
     }
 
+    self.log('Connecting to Sensr.net to retrieve camera configuration.');
+
     if (self.config.accounts) {
         self.config.accounts.forEach(processSensrAccounts);
+    } else {
+        self.log('No Sensr.net accounts found.');
     }
 };
 
@@ -112,5 +121,5 @@ module.exports = function (homebridge) {
     SensrPlatform.prototype.HomebridgeHap = homebridge.hap;
     SensrPlatform.prototype.HomebridgeUUIDGen = homebridge.hap.uuid;
 
-    homebridge.registerPlatform("homebridge-camera-sensr", "Camera-Sensr", SensrPlatform, true);
+    homebridge.registerPlatform('homebridge-camera-sensr', 'Camera-Sensr', SensrPlatform, true);
 };
