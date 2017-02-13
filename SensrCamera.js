@@ -2,7 +2,7 @@
 var ip = require('ip'),
     spawn = require('child_process').spawn,
     request = require('request').defaults({ encoding: null }),
-    debug = require('debug')('Camera:Sensr:CameraAccessory');
+    debug;
 
 /**
  * Represents a Sensr.net Camera
@@ -16,7 +16,9 @@ var ip = require('ip'),
  */
 function SensrCamera(hap, sensrCameraOptions, log) {
     var self = this;
-    self.name = sensrCameraOptions.name;
+    self.name = sensrCameraOptions.name || 'NAME NOT SPECIFIED';
+    debug = require('debug')('Camera:Sensr:CameraAccessory:' + self.name);
+    
     self.HomeBridgeHap = hap;
     self.options = sensrCameraOptions;
     self.log = debug || log || console.log;
@@ -26,7 +28,7 @@ function SensrCamera(hap, sensrCameraOptions, log) {
     self.HomebridgeHapCharacteristic = hap.Characteristic;
     self.HomebridgeHapStreamController = hap.StreamController;
 
-    self.log(self.name, 'Configuring a SensrCamera.', self.options);
+    self.log('Configuring a SensrCamera.', self.options);
 
     self.services = [];
     self.streamControllers = [];
@@ -40,20 +42,20 @@ function SensrCamera(hap, sensrCameraOptions, log) {
 
 SensrCamera.prototype.handleCloseConnection = function (connectionId) {
     var self = this;
-    self.log(self.name, 'Closing Connection.', connectionId);
+    self.log('Closing Connection.', connectionId);
     self.streamControllers.forEach(function (controller) {
         controller.handleCloseConnection(connectionId);
     });
-    self.log(self.name, 'Closed Connection.', connectionId);
+    self.log('Closed Connection.', connectionId);
 };
 
 SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     var self = this;
-    self.log(self.name, 'Generating Snapshot.', self.options.still);
+    self.log('Generating Snapshot.', self.options.still);
 
     request({ url: self.options.still }, function (err, response, buffer) {
         callback(err, buffer);
-        self.log(self.name, 'Generated Snapshot.', self.options.still);
+        self.log('Generated Snapshot.', self.options.still);
     });
 };
 
@@ -66,7 +68,7 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
 
     sessionInfo.address = targetAddress;
 
-    self.log(self.name, 'Preparing Stream.', sessionInfo);
+    self.log('Preparing Stream.', sessionInfo);
 
     var videoInfo = request.video;
 
@@ -100,7 +102,7 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
     self.pendingSessions[self.HomebridgeHapUuid.unparse(sessionID)] = sessionInfo;
 
     callback(response);
-    self.log(self.name, 'Prepared Stream.', sessionInfo);
+    self.log('Prepared Stream.', sessionInfo);
 };
 
 SensrCamera.prototype.handleStreamRequest = function (request) {
@@ -108,14 +110,14 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
         sessionId = request.sessionID,
         requestType = request.type;
 
-    self.log(self.name, 'Handling Stream Request.', sessionId, requestType);
+    self.log('Handling Stream Request.', sessionId, requestType);
 
     if (sessionId) {
         var sessionIdentifier = self.HomebridgeHapUuid.unparse(sessionId);
 
         if (requestType === 'start') {
             var sessionInfo = self.pendingSessions[sessionIdentifier];
-            self.log(self.name, 'Starting Stream.', sessionId, sessionIdentifier);
+            self.log('Starting Stream.', sessionId, sessionIdentifier);
 
             if (sessionInfo) {
                 var width = 1280;
@@ -141,14 +143,14 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
                 var videoKey = sessionInfo.video_srtp;
 
                 var ffmpegCommand = '-i ' + self.options.still + ' -threads 0 -vcodec libx264 -an -pix_fmt yuv420p -r ' + fps + ' -f rawvideo -tune zerolatency -vf scale=' + width + ':' + height + ' -b:v ' + bitrate + 'k -bufsize ' + bitrate + 'k -payload_type 99 -ssrc 1 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ' + videoKey.toString('base64') + ' srtp://' + targetAddress + ':' + targetVideoPort + '?rtcpport=' + targetVideoPort + '&localrtcpport=' + targetVideoPort + '&pkt_size=1378';
-                self.log(self.name, ffmpegCommand);
+                self.log(ffmpegCommand);
                 var ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env });
                 self.ongoingSessions[sessionIdentifier] = ffmpeg;
             }
 
             delete this.pendingSessions[sessionIdentifier];
         } else if (requestType === 'stop') {
-            self.log(self.name, 'Stopping Stream.', sessionId, sessionIdentifier);
+            self.log('Stopping Stream.', sessionId, sessionIdentifier);
             var ffmpegProcess = this.ongoingSessions[sessionIdentifier];
             if (ffmpegProcess) {
                 ffmpegProcess.kill('SIGKILL');
@@ -158,17 +160,17 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
         }
     }
 
-    self.log(self.name, 'Handled Stream Request.', sessionId, requestType);
+    self.log('Handled Stream Request.', sessionId, requestType);
 };
 
 SensrCamera.prototype.createCameraControlService = function () {
     var self = this;
-    self.log(self.name, 'Creating Camera Control Service');
+    self.log('Creating Camera Control Service');
 
     var controlService = new self.HomebridgeHapService.CameraControl();
 
     self.services.push(controlService);
-    self.log(self.name, 'Created Camera Control Service');
+    self.log('Created Camera Control Service');
 };
 
 SensrCamera.prototype._createStreamControllers = function (options) {
@@ -179,7 +181,7 @@ SensrCamera.prototype._createStreamControllers = function (options) {
         maxHeight = 480,
         fps = 3;
 
-    self.log(self.name, 'Creating Camera Stream Controller(s)');
+    self.log('Creating Camera Stream Controller(s)');
 
     options = options || {
         srtp: true,
@@ -212,7 +214,7 @@ SensrCamera.prototype._createStreamControllers = function (options) {
         self.streamControllers.push(streamController);
     }
 
-    self.log(self.name, 'Created Camera Stream Controller(s)');
+    self.log('Created Camera Stream Controller(s)');
 };
 
 module.exports = SensrCamera;
