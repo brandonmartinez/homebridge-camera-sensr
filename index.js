@@ -62,7 +62,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
                     live: urls.livestream,
                 };
 
-            self.log('Adding new Sensr Camera source.', sensrCameraConfig);
+            self.log('Adding new Sensr Camera source.', sensrCameraConfig.name);
             var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
                 cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
                 cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);

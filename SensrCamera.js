@@ -161,13 +161,16 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
 };
 
 SensrCamera.prototype.createCameraControlService = function () {
+    self.log('Creating Camera Control Service');
     var self = this,
         controlService = new self.HomebridgeHapService.CameraControl();
 
     self.services.push(controlService);
+    self.log('Created Camera Control Service');
 };
 
 SensrCamera.prototype._createStreamControllers = function (options) {
+    self.log('Creating Camera Stream Controller(s)');
     var self = this,
         // TODO: add support to override these options?
         maxStreams = 2,
@@ -205,6 +208,8 @@ SensrCamera.prototype._createStreamControllers = function (options) {
         self.services.push(streamController.service);
         self.streamControllers.push(streamController);
     }
+
+    self.log('Created Camera Stream Controller(s)');
 };
 
 module.exports = SensrCamera;
