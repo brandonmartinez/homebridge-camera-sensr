@@ -72,7 +72,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
             configuredAccessories.push(cameraAccessory);
         }
 
-        if (!error && response.statusCode === 200) {
+        if (!error && response && response.statusCode === 200) {
             var data = JSON.parse(body);
 
             if (data && data.cameras) {
@@ -90,10 +90,10 @@ SensrPlatform.prototype.didFinishLaunching = function () {
     function processSensrAccounts(account) {
         var token = account.token;
 
-        self.log('Attempting to connect to Sensr.net account.', account);
+        self.log('Attempting to connect to Sensr.net account.', self.config.sensrApi.camerasOwnedUrl, account);
 
         if (!token) {
-            self.log('Missing parameters.');
+            self.log('A token is required to connect with Sensr.net.');
             return;
         }
 
