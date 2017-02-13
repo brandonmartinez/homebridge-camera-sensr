@@ -25,6 +25,8 @@ function SensrCamera(hap, sensrCameraOptions, log) {
     self.HomebridgeHapCharacteristic = hap.Characteristic;
     self.HomebridgeHapStreamController = hap.StreamController;
 
+    self.log('Configuring a SensrCamera.', self.options);
+
     self.services = [];
     self.streamControllers = [];
 
@@ -35,19 +37,22 @@ function SensrCamera(hap, sensrCameraOptions, log) {
     self._createStreamControllers();
 }
 
-SensrCamera.prototype.handleCloseConnection = function (connectionID) {
+SensrCamera.prototype.handleCloseConnection = function (connectionId) {
     var self = this;
+    self.log('Closing Connection.', connectionId);
     self.streamControllers.forEach(function (controller) {
-        controller.handleCloseConnection(connectionID);
+        controller.handleCloseConnection(connectionId);
     });
+    self.log('Closed Connection.', connectionId);
 };
 
 SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     var self = this;
-    self.log('Request made for handleSnapshotRequest.', self.options.still);
+    self.log('Generating Snapshot.', self.options.still);
 
     request({ url: self.options.still }, function (err, response, buffer) {
         callback(err, buffer);
+        self.log('Generated Snapshot.', self.options.still);
     });
 };
 
@@ -59,6 +64,8 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
         targetAddress = request.targetAddress;
 
     sessionInfo.address = targetAddress;
+
+    self.log('Preparing Stream.', sessionInfo);
 
     var videoInfo = request.video;
 
@@ -92,18 +99,22 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
     self.pendingSessions[self.HomebridgeHapUuid.unparse(sessionID)] = sessionInfo;
 
     callback(response);
+    self.log('Prepared Stream.', sessionInfo);
 };
 
 SensrCamera.prototype.handleStreamRequest = function (request) {
     var self = this,
-        sessionID = request.sessionID,
+        sessionId = request.sessionID,
         requestType = request.type;
 
-    if (sessionID) {
-        var sessionIdentifier = self.HomebridgeHapUuid.unparse(sessionID);
+    self.log('Handling Stream Request.', sessionId, requestType);
+
+    if (sessionId) {
+        var sessionIdentifier = self.HomebridgeHapUuid.unparse(sessionId);
 
         if (requestType === 'start') {
             var sessionInfo = self.pendingSessions[sessionIdentifier];
+            self.log('Starting Stream.', sessionId, sessionIdentifier);
 
             if (sessionInfo) {
                 var width = 1280;
@@ -136,6 +147,7 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
 
             delete this.pendingSessions[sessionIdentifier];
         } else if (requestType === 'stop') {
+            self.log('Stopping Stream.', sessionId, sessionIdentifier);
             var ffmpegProcess = this.ongoingSessions[sessionIdentifier];
             if (ffmpegProcess) {
                 ffmpegProcess.kill('SIGKILL');
@@ -144,6 +156,8 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
             delete self.ongoingSessions[sessionIdentifier];
         }
     }
+
+    self.log('Handled Stream Request.', sessionId, requestType);
 };
 
 SensrCamera.prototype.createCameraControlService = function () {
