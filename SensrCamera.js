@@ -1,74 +1,78 @@
 'use strict';
-var uuid, Service, Characteristic, StreamController;
-
-var fs = require('fs');
-var request = require('request').defaults({ encoding: null });
-var spawn = require('child_process').spawn;
+var uuid, Service, Characteristic, StreamController,
+    request = require('request').defaults({ encoding: null });
 
 function SensrCamera(hap, sensrCameraOptions, log) {
+    var self = this;
+
     uuid = hap.uuid;
     Service = hap.Service;
     Characteristic = hap.Characteristic;
     StreamController = hap.StreamController;
 
-    this.options = sensrCameraOptions;
-    this.log = log;
+    self.options = sensrCameraOptions;
+    self.log = log;
 
-    this.services = [];
-    this.streamControllers = [];
+    self.services = [];
+    self.streamControllers = [];
 
-    this.pendingSessions = {};
-    this.ongoingSessions = {};
+    self.pendingSessions = {};
+    self.ongoingSessions = {};
 
-    // TODO: These should be dynamic to some degree
-    var numberOfStreams = 1;
-    var maxWidth = 640;
-    var maxHeight = 480;
-    var maxFPS = 15;
-
-    this.createCameraControlService();
-    this._createStreamControllers(numberOfStreams);
+    self.createCameraControlService();
+    self._createStreamControllers();
 }
 
 SensrCamera.prototype.handleCloseConnection = function (connectionID) {
-    this.streamControllers.forEach(function (controller) {
+    var self = this;
+    self.streamControllers.forEach(function (controller) {
         controller.handleCloseConnection(connectionID);
     });
-}
+};
 
 
 SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
-    let resolution = req.width + 'x' + req.height;
-    this.log('Request made for handleSnapshotRequest.', this.options.still);
+    var self = this;
+    self.log('Request made for handleSnapshotRequest.', self.options.still);
 
-    request({ url: this.options.still }, function (err, response, buffer) {
+    request({ url: self.options.still }, function (err, response, buffer) {
         callback(err, buffer);
     });
-}
+};
 
 SensrCamera.prototype.createCameraControlService = function () {
-    var controlService = new Service.CameraControl();
+    var self = this,
+        controlService = new Service.CameraControl();
 
-    this.services.push(controlService);
-}
+    self.services.push(controlService);
+};
 
-SensrCamera.prototype._createStreamControllers = function (maxStreams, options) {
-    let self = this;
+SensrCamera.prototype._createStreamControllers = function (options) {
+    var self = this,
+        // TODO: add support to override these options?
+        maxStreams = 1,
+        maxWidth = 640,
+        maxHeight = 480,
+        fps = 3;
+
     options = options || {
         video: {
             codec: {
-                profiles: [0, 1, 2], // Enum, please refer StreamController.VideoCodecParamProfileIDTypes
-                levels: [0, 1, 2] // Enum, please refer StreamController.VideoCodecParamLevelTypes
+                // Enum, refer to StreamController.VideoCodecParamProfileIDTypes
+                profiles: [0, 1, 2],
+                // Enum, refer to StreamController.VideoCodecParamLevelTypes
+                levels: [0, 1, 2]
             },
             resolutions: [
-                [640, 480, 15]
+                [maxWidth, maxHeight, fps]
             ]
         },
+        // We don't really use this, since there is no sound from the JPEG stream
         audio: {
             codecs: [
                 {
-                    type: "OPUS", // Audio Codec
-                    samplerate: 24 // 8, 16, 24 KHz
+                    type: "OPUS",
+                    samplerate: 8
                 },
                 {
                     type: "AAC-eld",
@@ -84,6 +88,6 @@ SensrCamera.prototype._createStreamControllers = function (maxStreams, options) 
         self.services.push(streamController.service);
         self.streamControllers.push(streamController);
     }
-}
+};
 
 module.exports = SensrCamera;
