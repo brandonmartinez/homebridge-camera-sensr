@@ -32,7 +32,7 @@ SensrPlatform.prototype.configureSensrApi = function () {
     var sensrApi = self.config.sensrApi || {};
 
     sensrApi.baseUrl = sanitizeUrlSlash(sensrApi.baseUrl || 'https://api.sensr.net/u/v3/');
-    sensrApi.camerasUrl = sanitizeUrlSlash(sensrApi.camerasBaseUrl || sensrApi.baseUrl + 'cameras/');
+    sensrApi.camerasBaseUrl = sanitizeUrlSlash(sensrApi.camerasBaseUrl || sensrApi.baseUrl + 'cameras/');
     sensrApi.camerasOwnedUrl = sensrApi.camerasOwnedUrl || sensrApi.camerasBaseUrl + 'owned.json';
 
     // Assigning cleaned up API endpoints back to config object
