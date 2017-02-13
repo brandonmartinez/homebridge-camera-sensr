@@ -1,13 +1,14 @@
 'use strict';
 
 var SensrCamera = require('./SensrCamera'),
-    request = require('request');
+    request = require('request'),
+    debug = require('debug')('Camera:Sensr:Platform');
 
 function SensrPlatform(log, config, api) {
     var self = this;
 
     // Capture parameters as instance variables
-    self.log = log || console.log;
+    self.log = debug || log || console.log;
     self.config = config || {};
     self.api = api;
 

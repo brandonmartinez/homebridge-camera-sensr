@@ -1,8 +1,8 @@
 'use strict';
 var ip = require('ip'),
     spawn = require('child_process').spawn,
-    request = require('request').defaults({ encoding: null });
-
+    request = require('request').defaults({ encoding: null }),
+    debug = require('debug')('Camera:Sensr:CameraAccessory');
 
 /**
  * Represents a Sensr.net Camera
@@ -18,7 +18,7 @@ function SensrCamera(hap, sensrCameraOptions, log) {
     var self = this;
     self.HomeBridgeHap = hap;
     self.options = sensrCameraOptions;
-    self.log = log;
+    self.log = debug || log || console.log;
 
     self.HomebridgeHapUuid = hap.uuid;
     self.HomebridgeHapService = hap.Service;
