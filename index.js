@@ -81,7 +81,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
                 self.log('No data was found for account.');
             }
         } else {
-            self.log('There was an error retrieving data from the Sensr.net account.');
+            self.log('There was an error retrieving data from the Sensr.net account.', response.statusCode, error);
         }
 
         self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
