@@ -1,9 +1,5 @@
 'use strict';
-var uuid,
-    Service,
-    Characteristic,
-    StreamController,
-    ip = require('ip'),
+var ip = require('ip'),
     spawn = require('child_process').spawn,
     request = require('request').defaults({ encoding: null });
 
@@ -20,14 +16,14 @@ var uuid,
  */
 function SensrCamera(hap, sensrCameraOptions, log) {
     var self = this;
-
-    uuid = hap.uuid;
-    Service = hap.Service;
-    Characteristic = hap.Characteristic;
-    StreamController = hap.StreamController;
-
+    self.HomeBridgeHap = hap;
     self.options = sensrCameraOptions;
     self.log = log;
+
+    self.HomebridgeHapUuid = hap.uuid;
+    self.HomebridgeHapService = hap.Service;
+    self.HomebridgeHapCharacteristic = hap.Characteristic;
+    self.HomebridgeHapStreamController = hap.StreamController;
 
     self.services = [];
     self.streamControllers = [];
@@ -56,7 +52,8 @@ SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
 };
 
 SensrCamera.prototype.prepareStream = function (request, callback) {
-    var sessionInfo = {},
+    var self = this,
+        sessionInfo = {},
         response = {},
         sessionID = request.sessionID,
         targetAddress = request.targetAddress;
@@ -92,7 +89,7 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
     addressResp.type = ip.isV4Format(currentAddress) ? 'v4' : 'v6';
 
     response.address = addressResp;
-    this.pendingSessions[uuid.unparse(sessionID)] = sessionInfo;
+    self.pendingSessions[self.HomebridgeHapUuid.unparse(sessionID)] = sessionInfo;
 
     callback(response);
 };
@@ -103,7 +100,7 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
         requestType = request.type;
 
     if (sessionID) {
-        var sessionIdentifier = uuid.unparse(sessionID);
+        var sessionIdentifier = self.HomebridgeHapUuid.unparse(sessionID);
 
         if (requestType === 'start') {
             var sessionInfo = self.pendingSessions[sessionIdentifier];
@@ -134,7 +131,7 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
                 var ffmpegCommand = '-i ' + self.options.still + ' -threads 0 -vcodec libx264 -an -pix_fmt yuv420p -r ' + fps + ' -f rawvideo -tune zerolatency -vf scale=' + width + ':' + height + ' -b:v ' + bitrate + 'k -bufsize ' + bitrate + 'k -payload_type 99 -ssrc 1 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ' + videoKey.toString('base64') + ' srtp://' + targetAddress + ':' + targetVideoPort + '?rtcpport=' + targetVideoPort + '&localrtcpport=' + targetVideoPort + '&pkt_size=1378';
                 self.log(ffmpegCommand);
                 var ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env });
-                this.ongoingSessions[sessionIdentifier] = ffmpeg;
+                self.ongoingSessions[sessionIdentifier] = ffmpeg;
             }
 
             delete this.pendingSessions[sessionIdentifier];
@@ -144,14 +141,14 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
                 ffmpegProcess.kill('SIGKILL');
             }
 
-            delete this.ongoingSessions[sessionIdentifier];
+            delete self.ongoingSessions[sessionIdentifier];
         }
     }
 };
 
 SensrCamera.prototype.createCameraControlService = function () {
     var self = this,
-        controlService = new Service.CameraControl();
+        controlService = new self.HomebridgeHapService.CameraControl();
 
     self.services.push(controlService);
 };
@@ -189,7 +186,7 @@ SensrCamera.prototype._createStreamControllers = function (options) {
     };
 
     for (var i = 0; i < maxStreams; i++) {
-        var streamController = new StreamController(i, options, self);
+        var streamController = new self.HomebridgeHapStreamController(i, options, self);
 
         self.services.push(streamController.service);
         self.streamControllers.push(streamController);

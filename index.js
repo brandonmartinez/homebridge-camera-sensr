@@ -62,7 +62,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
                 };
 
             var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
-                cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, hap.Accessory.Categories.CAMERA),
+                cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
                 cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);
 
             sensrCameraConfig.uuid = uuid;
