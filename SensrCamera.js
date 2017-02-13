@@ -18,7 +18,7 @@ function SensrCamera(hap, sensrCameraOptions, log) {
     var self = this;
     self.name = sensrCameraOptions.name || 'NAME NOT SPECIFIED';
     debug = require('debug')('Camera:Sensr:CameraAccessory:' + self.name);
-    
+
     self.HomeBridgeHap = hap;
     self.options = sensrCameraOptions;
     self.log = debug || log || console.log;
@@ -168,8 +168,8 @@ SensrCamera.prototype.createCameraControlService = function () {
     self.log('Creating Camera Control Service');
 
     var controlService = new self.HomebridgeHapService.CameraControl();
-
     self.services.push(controlService);
+    
     self.log('Created Camera Control Service');
 };
 
@@ -209,7 +209,6 @@ SensrCamera.prototype._createStreamControllers = function (options) {
 
     for (var i = 0; i < maxStreams; i++) {
         var streamController = new self.HomebridgeHapStreamController(i, options, self);
-
         self.services.push(streamController.service);
         self.streamControllers.push(streamController);
     }

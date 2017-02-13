@@ -70,6 +70,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
             sensrCameraConfig.uuid = uuid;
 
             cameraAccessory.configureCameraSource(cameraSource);
+            self.log('Adding Sensr Camera to available accessories.', sensrCameraConfig.name);
             configuredAccessories.push(cameraAccessory);
         }
 
@@ -84,7 +85,8 @@ SensrPlatform.prototype.didFinishLaunching = function () {
         } else {
             self.log('There was an error retrieving data from the Sensr.net account.', response.statusCode, error);
         }
-
+        
+        self.log('Publishing available ' + configuredAccessories.length + ' accessories.');
         self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
     }
 
