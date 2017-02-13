@@ -41,7 +41,7 @@ SensrPlatform.prototype.configureSensrApi = function () {
 
 SensrPlatform.prototype.configureAccessory = function () {
     // No configuration options available
-}
+};
 
 SensrPlatform.prototype.didFinishLaunching = function () {
     var self = this;
