@@ -26,7 +26,7 @@ SensrPlatform.prototype.configureSensrApi = function () {
     var self = this;
 
     function sanitizeUrlSlash(u) {
-        return (u[u - 1] !== '/') ? u + '/' : u;
+        return (u[u.length - 1] !== '/') ? u + '/' : u;
     }
 
     // Validating the existance of Sensr API configuration, otherwise providing defaults
