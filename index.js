@@ -36,7 +36,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
     self.log('Connecting to Sensr.net to retrieve camera configuration.');
 
     if (self.config.accounts) {
-        self.config.accounts.forEach(self._processSensrAccounts);
+        self.config.accounts.forEach(self._processSensrAccounts, self);
     } else {
         self.log('No Sensr.net accounts found.');
     }
@@ -98,7 +98,7 @@ SensrPlatform.prototype._processSensrResponse = function processSensrResponse(er
             data.cameras.forEach(function (cameraResponse) {
                 var camera = self._processSensrCamera(cameraResponse);
                 configuredAccessories.push(camera);
-            }, this);
+            }, self);
         } else {
             self.log('No data was found for account.');
         }
@@ -131,7 +131,7 @@ SensrPlatform.prototype._processSensrAccounts = function (account) {
 
 module.exports = function (homebridge) {
     SensrCamera = require('./SensrCamera')(homebridge.hap);
-
+    
     SensrPlatform.prototype.HomebridgeAccessory = homebridge.platformAccessory;
     SensrPlatform.prototype.HomebridgeHap = homebridge.hap;
     SensrPlatform.prototype.HomebridgeUUIDGen = homebridge.hap.uuid;
