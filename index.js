@@ -103,7 +103,7 @@ SensrPlatform.prototype._processSensrResponse = function processSensrResponse(er
             self.log('No data was found for account.');
         }
     } else {
-        self.log('There was an error retrieving data from the Sensr.net account.', response.statusCode, error);
+        self.log('There was an error retrieving data from the Sensr.net account.', (response || {}).statusCode || 0, error);
     }
 
     self.log('Publishing ' + configuredAccessories.length + ' available accessories.');
