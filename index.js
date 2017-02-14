@@ -87,29 +87,6 @@ SensrPlatform.prototype._processSensrCamera = function (cameraConfig) {
     return cameraAccessory;
 };
 
-SensrPlatform.prototype._processSensrResponse = function processSensrResponse(error, response, body) {
-    var self = this,
-        configuredAccessories = [];
-
-    if (!error && response && response.statusCode === 200) {
-        var data = JSON.parse(body);
-
-        if (data && data.cameras) {
-            data.cameras.forEach(function (cameraResponse) {
-                var camera = self._processSensrCamera(cameraResponse);
-                configuredAccessories.push(camera);
-            }, self);
-        } else {
-            self.log('No data was found for account.');
-        }
-    } else {
-        self.log('There was an error retrieving data from the Sensr.net account.', (response || {}).statusCode || 0, error);
-    }
-
-    self.log('Publishing ' + configuredAccessories.length + ' available accessories.');
-    self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
-};
-
 SensrPlatform.prototype._processSensrAccounts = function (account) {
     var self = this,
         token = account.token;
@@ -126,8 +103,27 @@ SensrPlatform.prototype._processSensrAccounts = function (account) {
         headers: {
             'Authorization': 'OAUTH ' + token
         }
-    }, function() {
-        self._processSensrResponse.call(self, arguments);
+    }, function (error, response, body) {
+        var self = this,
+            configuredAccessories = [];
+
+        if (!error && response && response.statusCode === 200) {
+            var data = JSON.parse(body);
+
+            if (data && data.cameras) {
+                data.cameras.forEach(function (cameraResponse) {
+                    var camera = self._processSensrCamera(cameraResponse);
+                    configuredAccessories.push(camera);
+                }, self);
+            } else {
+                self.log('No data was found for account.');
+            }
+        } else {
+            self.log('There was an error retrieving data from the Sensr.net account.', (response || {}).statusCode || 0, error);
+        }
+
+        self.log('Publishing ' + configuredAccessories.length + ' available accessories.');
+        self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
     });
 };
 
