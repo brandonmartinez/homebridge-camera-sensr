@@ -14,19 +14,13 @@ var ip = require('ip'),
  * @see {@link https://github.com/KhaosT/homebridge-camera-ffmpeg/|Homebridge Camera FFMPEG}
  * @see {@link https://ffmpeg.org/ffmpeg.html|FFMPEG Reference}
  */
-function SensrCamera(hap, sensrCameraOptions, log) {
+function SensrCamera(sensrCameraOptions) {
     var self = this;
     self.name = sensrCameraOptions.name || 'NAME NOT SPECIFIED';
     debug = require('debug')('Camera:Sensr:CameraAccessory:' + self.name);
 
-    self.HomeBridgeHap = hap;
     self.options = sensrCameraOptions;
-    self.log = debug || log || console.log;
-
-    self.HomebridgeHapUuid = hap.uuid;
-    self.HomebridgeHapService = hap.Service;
-    self.HomebridgeHapCharacteristic = hap.Characteristic;
-    self.HomebridgeHapStreamController = hap.StreamController;
+    self.log = debug;
 
     self.log('Configuring a SensrCamera.', self.options);
 
@@ -216,4 +210,19 @@ SensrCamera.prototype._createStreamControllers = function (options) {
     self.log('Created Camera Stream Controller(s)');
 };
 
-module.exports = SensrCamera;
+//module.exports = SensrCamera;
+
+module.exports = function(hap) {
+    if(!hap){
+        throw new Error('Homebridge hap must be defined.');
+    }
+
+    // Assigning these here as they should be the same across all instances
+    SensrCamera.prototype.HomeBridgeHap = hap;
+    SensrCamera.prototype.HomebridgeHapUuid = hap.uuid;
+    SensrCamera.prototype.HomebridgeHapService = hap.Service;
+    SensrCamera.prototype.HomebridgeHapCharacteristic = hap.Characteristic;
+    SensrCamera.prototype.HomebridgeHapStreamController = hap.StreamController;
+
+    return SensrCamera;
+};

@@ -1,6 +1,6 @@
 'use strict';
 
-var SensrCamera = require('./SensrCamera'),
+var SensrCamera,
     request = require('request'),
     debug = require('debug')('Camera:Sensr:Platform');
 
@@ -69,7 +69,7 @@ SensrPlatform.prototype.didFinishLaunching = function () {
                     self.log('Adding new Sensr Camera source.', sensrCameraConfig.name, sensrCameraConfig.id);
                     var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
                         cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
-                        cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);
+                        cameraSource = new SensrCamera(sensrCameraConfig);
 
                     sensrCameraConfig.uuid = uuid;
 
@@ -118,6 +118,8 @@ SensrPlatform.prototype.didFinishLaunching = function () {
 
 
 module.exports = function (homebridge) {
+    SensrCamera = require('./SensrCamera')(homebridge.hap);
+    
     SensrPlatform.prototype.HomebridgeAccessory = homebridge.platformAccessory;
     SensrPlatform.prototype.HomebridgeHap = homebridge.hap;
     SensrPlatform.prototype.HomebridgeUUIDGen = homebridge.hap.uuid;
