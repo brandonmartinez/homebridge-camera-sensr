@@ -104,8 +104,7 @@ SensrPlatform.prototype._processSensrAccounts = function (account) {
             'Authorization': 'OAUTH ' + token
         }
     }, function (error, response, body) {
-        var self = this,
-            configuredAccessories = [];
+        var configuredAccessories = [];
 
         if (!error && response && response.statusCode === 200) {
             var data = JSON.parse(body);
