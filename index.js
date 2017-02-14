@@ -126,12 +126,14 @@ SensrPlatform.prototype._processSensrAccounts = function (account) {
         headers: {
             'Authorization': 'OAUTH ' + token
         }
-    }, self._processSensrResponse);
+    }, function() {
+        self._processSensrResponse.call(self, arguments);
+    });
 };
 
 module.exports = function (homebridge) {
     SensrCamera = require('./SensrCamera')(homebridge.hap);
-    
+
     SensrPlatform.prototype.HomebridgeAccessory = homebridge.platformAccessory;
     SensrPlatform.prototype.HomebridgeHap = homebridge.hap;
     SensrPlatform.prototype.HomebridgeUUIDGen = homebridge.hap.uuid;
