@@ -1,7 +1,9 @@
 'use strict';
 var ip = require('ip'),
     spawn = require('child_process').spawn,
-    request = require('request').defaults({ encoding: null }),
+    request = require('request').defaults({
+        encoding: null
+    }),
     debug;
 
 /**
@@ -47,7 +49,9 @@ SensrCamera.prototype.handleSnapshotRequest = function (req, callback) {
     var self = this;
     self.log('Generating Snapshot.', self.options.still);
 
-    request({ url: self.options.still }, function (err, response, buffer) {
+    request({
+        url: self.options.still
+    }, function (err, response, buffer) {
         callback(err, buffer);
         self.log('Generated Snapshot.', self.options.still);
     });
@@ -83,6 +87,25 @@ SensrCamera.prototype.prepareStream = function (request, callback) {
         sessionInfo.video_port = targetPort;
         sessionInfo.video_srtp = Buffer.concat([srtp_key, srtp_salt]);
         sessionInfo.video_ssrc = 1;
+    }
+
+    var audioInfo = request.audio;
+    if (audioInfo) {
+        var targetPort = audioInfo.port,
+            srtp_key = audioInfo.srtp_key,
+            srtp_salt = audioInfo.srtp_salt,
+            audioResp = {
+                port: targetPort,
+                ssrc: 1,
+                srtp_key: srtp_key,
+                srtp_salt: srtp_salt
+            };
+
+        response.audio = audioResp;
+
+        sessionInfo.audio_port = targetPort;
+        sessionInfo.audio_srtp = Buffer.concat([srtp_key, srtp_salt]);
+        sessionInfo.audio_ssrc = 1;
     }
 
     var currentAddress = ip.address();
@@ -132,20 +155,47 @@ SensrCamera.prototype.handleStreamRequest = function (request) {
                     bitrate = videoInfo.max_bit_rate;
                 }
 
-                var targetAddress = sessionInfo.address;
-                var targetVideoPort = sessionInfo.video_port;
-                var videoKey = sessionInfo.video_srtp;
+                // Build the ffmpeg command to serve the MJPEG stream as x264 over SRTP
+                var mjpegStream = self.options.live,
+                    targetAddress = sessionInfo.address,
+                    targetVideoPort = sessionInfo.video_port,
+                    srtpKey = sessionInfo.video_srtp.toString('base64'),
+                    srtpDestination = 'srtp://' + targetAddress + ':' + targetVideoPort + '?rtcpport=' + targetVideoPort + '&localrtcpport=' + targetVideoPort + '&pkt_size=1378';
 
-                var ffmpegCommand = '-i ' + self.options.still + ' -threads 0 -vcodec libx264 -an -pix_fmt yuv420p -r ' + fps + ' -f rawvideo -tune zerolatency -vf scale=' + width + ':' + height + ' -b:v ' + bitrate + 'k -bufsize ' + bitrate + 'k -payload_type 99 -ssrc 1 -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ' + videoKey.toString('base64') + ' srtp://' + targetAddress + ':' + targetVideoPort + '?rtcpport=' + targetVideoPort + '&localrtcpport=' + targetVideoPort + '&pkt_size=1378';
+                // starting with the input MJPEG URL
+                var ffmpegCommand = '-i ' + mjpegStream;
+                // set the input format explicitly
+                ffmpegCommand += ' -f mjpeg';
+                // set the codec
+                ffmpegCommand += ' -c:v libx264';
+                // set the preset and tuning
+                ffmpegCommand += ' -preset fast -tune zerolatency';
+                // set the constant rate (higher is lower quality)
+                ffmpeg += ' -crf 18';
+                // set a scaling
+                ffmpegCommand += ' -vf scale=' + width + ':' + height;
+                // set the RTP payload type
+                ffmpegCommand += ' -payload_type 99';
+                // set the RTP SSRC value
+                ffmpegCommand += ' -ssrc 1';
+                // setting destination output format to RTP
+                ffmpegCommand += ' -f rtp';
+                // specify the SRTP version
+                ffmpegCommand += ' -srtp_out_suite AES_CM_128_HMAC_SHA1_80';
+                // specify the SRTP key and destination for output
+                ffmpegCommand += ' -srtp_out_params ' + srtpKey + ' ' + srtpDestination;
+
                 self.log(ffmpegCommand);
-                var ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env });
+                var ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), {
+                    env: process.env
+                });
                 self.ongoingSessions[sessionIdentifier] = ffmpeg;
             }
 
             delete this.pendingSessions[sessionIdentifier];
         } else if (requestType === 'stop') {
             self.log('Stopping Stream.', sessionId, sessionIdentifier);
-            var ffmpegProcess = this.ongoingSessions[sessionIdentifier];
+            var ffmpegProcess = self.ongoingSessions[sessionIdentifier];
             if (ffmpegProcess) {
                 ffmpegProcess.kill('SIGKILL');
             }
@@ -163,7 +213,7 @@ SensrCamera.prototype.createCameraControlService = function () {
 
     var controlService = new self.HomebridgeHapService.CameraControl();
     self.services.push(controlService);
-    
+
     self.log('Created Camera Control Service');
 };
 
@@ -192,12 +242,10 @@ SensrCamera.prototype._createStreamControllers = function (options) {
         },
         // We don't really use this, since there is no sound from the JPEG stream
         audio: {
-            codecs: [
-                {
-                    type: "OPUS",
-                    samplerate: 16
-                }
-            ]
+            codecs: [{
+                type: "OPUS",
+                samplerate: 16
+            }]
         }
     };
 
@@ -212,8 +260,8 @@ SensrCamera.prototype._createStreamControllers = function (options) {
 
 //module.exports = SensrCamera;
 
-module.exports = function(hap) {
-    if(!hap){
+module.exports = function (hap) {
+    if (!hap) {
         throw new Error('Homebridge hap must be defined.');
     }
 

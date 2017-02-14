@@ -5,7 +5,6 @@ var SensrCamera,
     request = require('request'),
     debug = require('debug')('Camera:Sensr:Platform');
 
-
 /**
  * Represents the Sensr.net Platform to integrate with Homebridge
  * 
@@ -73,17 +72,15 @@ SensrPlatform.prototype._processSensrCamera = function (cameraConfig) {
             state: camera.state,
             still: urls.latestimage,
             live: urls.livestream,
+            uuid: self.HomebridgeUUIDGen.generate(cameraConfig.camera.id.toString())
         };
 
     self.log('Adding new Sensr Camera source.', sensrCameraConfig.name, sensrCameraConfig.id);
-    var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
-        cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
+    var cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, sensrCameraConfig.uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
         cameraSource = new SensrCamera(sensrCameraConfig);
 
-    sensrCameraConfig.uuid = uuid;
-
     cameraAccessory.configureCameraSource(cameraSource);
-    self.log('Adding Sensr Camera to available accessories.', sensrCameraConfig.name, uuid);
+    self.log('Adding Sensr Camera to available accessories.', sensrCameraConfig.name, sensrCameraConfig.uuid);
     return cameraAccessory;
 };
 
