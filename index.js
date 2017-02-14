@@ -50,42 +50,40 @@ SensrPlatform.prototype.didFinishLaunching = function () {
     function processSensrResponse(error, response, body) {
         var configuredAccessories = [];
 
-        function processCameraConfig(cameraConfig) {
-            var camera = cameraConfig.camera,
-
-                urls = cameraConfig.urls,
-                sensrCameraConfig = {
-                    name: camera.name,
-                    id: camera.id,
-                    state: camera.state,
-                    still: urls.latestimage,
-                    live: urls.livestream,
-                };
-
-            self.log('Adding new Sensr Camera source.', sensrCameraConfig.name, sensrCameraConfig.id);
-            var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
-                cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
-                cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);
-
-            sensrCameraConfig.uuid = uuid;
-
-            cameraAccessory.configureCameraSource(cameraSource);
-            self.log('Adding Sensr Camera to available accessories.', sensrCameraConfig.name, uuid);
-            configuredAccessories.push(cameraAccessory);
-        }
-
         if (!error && response && response.statusCode === 200) {
             var data = JSON.parse(body);
 
             if (data && data.cameras) {
-                data.cameras.forEach(processCameraConfig);
+                data.cameras.forEach(function (cameraConfig) {
+                    var camera = cameraConfig.camera,
+
+                        urls = cameraConfig.urls,
+                        sensrCameraConfig = {
+                            name: camera.name,
+                            id: camera.id,
+                            state: camera.state,
+                            still: urls.latestimage,
+                            live: urls.livestream,
+                        };
+
+                    self.log('Adding new Sensr Camera source.', sensrCameraConfig.name, sensrCameraConfig.id);
+                    var uuid = self.HomebridgeUUIDGen.generate(sensrCameraConfig.id.toString()),
+                        cameraAccessory = new self.HomebridgeAccessory(sensrCameraConfig.name, uuid, self.HomebridgeHap.Accessory.Categories.CAMERA),
+                        cameraSource = new SensrCamera(self.HomebridgeHap, sensrCameraConfig, self.log);
+
+                    sensrCameraConfig.uuid = uuid;
+
+                    cameraAccessory.configureCameraSource(cameraSource);
+                    self.log('Adding Sensr Camera to available accessories.', sensrCameraConfig.name, uuid);
+                    configuredAccessories.push(cameraAccessory);
+                });
             } else {
                 self.log('No data was found for account.');
             }
         } else {
             self.log('There was an error retrieving data from the Sensr.net account.', response.statusCode, error);
         }
-        
+
         self.log('Publishing ' + configuredAccessories.length + ' available accessories.');
         self.api.publishCameraAccessories('Camera-Sensr', configuredAccessories);
     }
