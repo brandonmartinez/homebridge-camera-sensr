@@ -124,7 +124,7 @@ SensrPlatform.prototype._processSensrAccounts = function (account) {
 };
 
 module.exports = function (homebridge) {
-    SensrCamera = require('./SensrCamera')(homebridge.hap);
+    SensrCamera = require('./lib/SensrCamera')(homebridge.hap);
 
     SensrPlatform.prototype.HomebridgeAccessory = homebridge.platformAccessory;
     SensrPlatform.prototype.HomebridgeHap = homebridge.hap;
