@@ -1,6 +1,16 @@
 # homebridge-camera-sensr
 A homebridge plugin to access your IP cameras available in your Sensr.net account.
 
+## Sample Configuration
+
+    "platforms": [{
+        "platform": "Camera-Sensr",
+        "accounts": [{
+            "description": "Any description, not really used",
+            "token": "token from process outlined below"
+        }]
+    }]
+
 ## Getting an OAUTH2 Token
 
 Follow the steps in the [Sensr.net guide](http://yacc.github.io/sensrapi-tutorials/) to get a token.
