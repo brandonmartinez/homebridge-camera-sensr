@@ -1,5 +1,11 @@
 # homebridge-camera-sensr
-A homebridge plugin to access your IP cameras available in your Sensr.net account.
+A [Homebridge](https://github.com/nfarina/homebridge) plugin to access your IP cameras available in your Sensr.net account.
+
+## Prerequisites
+
+* A working [Homebridge](https://github.com/nfarina/homebridge) installation
+* FFMPEG with libx264
+* An active Sensr.net account and a Sensr.net developer application (see below)
 
 ## Sample Configuration
 
